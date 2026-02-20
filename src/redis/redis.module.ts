@@ -1,7 +1,8 @@
 import { Module, Global } from '@nestjs/common';
 import Redis from 'ioredis';
+import { RedisService } from './redis.servicee';
 
-@Global() 
+@Global()
 @Module({
   providers: [
     {
@@ -10,11 +11,11 @@ import Redis from 'ioredis';
         return new Redis({
           host: '127.0.0.1',
           port: 6379,
-          // password: process.env.REDIS_PASSWORD || undefined,
         });
       },
     },
+    RedisService,
   ],
-  exports: ['REDIS_CLIENT'],
+  exports: ['REDIS_CLIENT', RedisService],
 })
 export class RedisModule {}

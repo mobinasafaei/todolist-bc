@@ -1,6 +1,7 @@
 import {
   Injectable,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -28,8 +29,15 @@ export class UserService {
       ...createUserDto,
       password: hashedPassword,
     });
-    
+
     return this.userRepository.save(user);
   }
 
+  async read(id: number): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+    return user;
+  }
 }
