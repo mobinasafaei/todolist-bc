@@ -8,7 +8,7 @@ export class RedisService {
 
   async setRefreshToken(userId: number, sessionId: string, token: string) {
     const key = `${userId}:${sessionId}`;
-    await this.redis.set(key, token, 'EX', 60 * 60 * 24 * 7); // 7 days
+    await this.redis.set(key, token, 'EX', 60 * 60 * 24 * 7); 
   }
 
   async getRefreshToken(userId: number, sessionId: string) {

@@ -1,14 +1,7 @@
-// auth.service.ts
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
-// import Redis from 'ioredis';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import * as bcrypt from 'bcrypt';
@@ -20,12 +13,11 @@ import { RedisService } from 'src/redis/redis.servicee';
 @Injectable()
 export class AuthService {
   constructor(
-   
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-      private readonly redisService: RedisService,
+    private readonly redisService: RedisService,
   ) {}
 
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
@@ -54,7 +46,11 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.redisService.setRefreshToken(user.id, payload.sessionId, refresh_token);
+    await this.redisService.setRefreshToken(
+      user.id,
+      payload.sessionId,
+      refresh_token,
+    );
 
     return {
       accessToken: access_token,
