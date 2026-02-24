@@ -1,11 +1,18 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Req, Get, Param } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import type { Request } from 'express';
+import { UnauthorizedException } from '@nestjs/common';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  
+  @Get('me')
+  me(@Req() req: Request) {
+    if (!req.user) throw new UnauthorizedException();
+    return this.userService.read(req.user.userId);
+  }
 
   @Get(':id')
   async read(@Param('id') id: string): Promise<User> {

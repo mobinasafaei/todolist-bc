@@ -58,4 +58,30 @@ export class AuthService {
       sessionId: payload.sessionId,
     };
   }
+
+  async refreshToken(refreshToken: string): Promise<LoginResponseDto> {
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
+      secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET_KEY'),
+    });
+    const storedRefreshToken = this.redisService.getRefreshToken(
+      payload.userId,
+      payload.sessionId,
+    );
+    if (storedRefreshToken == payload.refreshToken) {
+      const access_token = await this.jwtService.signAsync(payload, {
+        expiresIn: '15m',
+      });
+      const refresh_token = await this.jwtService.signAsync(payload, {
+        secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET_KEY'),
+        expiresIn: '7d',
+      });
+      return {
+        accessToken: access_token,
+        refreshToken: refresh_token,
+        sessionId: payload.sessionId,
+      };
+    } else {
+      throw new UnauthorizedException('you should log in');
+    }
+  }
 }
