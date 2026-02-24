@@ -63,18 +63,28 @@ export class AuthService {
     const payload = await this.jwtService.verifyAsync(refreshToken, {
       secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET_KEY'),
     });
-    const storedRefreshToken = this.redisService.getRefreshToken(
+    const storedRefreshToken = await this.redisService.getRefreshToken(
       payload.userId,
       payload.sessionId,
     );
-    if (storedRefreshToken == payload.refreshToken) {
-      const access_token = await this.jwtService.signAsync(payload, {
+    const newTokensPayLoad = {
+      userId: payload.userId,
+      sessionId: payload.sessionId,
+      email: payload.email,
+    };
+    if (storedRefreshToken === refreshToken) {
+      const access_token = await this.jwtService.signAsync(newTokensPayLoad, {
         expiresIn: '15m',
       });
-      const refresh_token = await this.jwtService.signAsync(payload, {
+      const refresh_token = await this.jwtService.signAsync(newTokensPayLoad, {
         secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET_KEY'),
         expiresIn: '7d',
       });
+      this.redisService.setRefreshToken(
+        payload.userId,
+        payload.sessionId,
+        refresh_token,
+      );
       return {
         accessToken: access_token,
         refreshToken: refresh_token,
